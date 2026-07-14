@@ -1,0 +1,179 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light; /* 다크테마 강제 비활성화 */
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #ffffff;
+  color: #1f2421;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* 모바일 하단 고정 CTA 높이만큼 본문 여백 확보 */
+@media (max-width: 767px) {
+  body {
+    padding-bottom: 64px;
+  }
+}
+
+@layer components {
+  .container-content {
+    @apply mx-auto w-full max-w-content px-5 sm:px-6;
+  }
+
+  .section-label {
+    @apply mb-3 inline-block text-sm font-semibold tracking-widest text-gold;
+  }
+
+  .section-title {
+    @apply text-3xl font-extrabold leading-snug tracking-tight text-brand sm:text-4xl md:text-5xl;
+  }
+
+  /* 상세페이지 문법: 섹션 헤더는 가운데 정렬 */
+  .section-head {
+    @apply mx-auto max-w-3xl text-center;
+  }
+
+  .section-lead {
+    @apply mt-5 text-lg leading-relaxed text-ink/65 sm:text-xl;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-base font-semibold transition-all duration-300 active:scale-[0.98] hover:-translate-y-0.5 hover:shadow-card;
+  }
+
+  .btn-cta {
+    @apply btn bg-cta text-white shadow-soft hover:bg-cta-dark;
+  }
+
+  .btn-call {
+    @apply btn border border-brand/25 bg-white text-brand hover:border-brand/50 hover:bg-ivory;
+  }
+
+  .btn-kakao {
+    @apply btn bg-[#FEE500] text-[#191600] hover:brightness-95;
+  }
+}
+
+/* 반복적으로 쓰이는 섬세한 인터랙션. 콘텐츠의 가독성을 해치지 않도록
+   스크롤 진입과 마우스 인터랙션에만 짧게 반응시킨다. */
+.nav-link {
+  position: relative;
+  transition: color 200ms ease;
+}
+
+.nav-link::after {
+  position: absolute;
+  right: 0;
+  bottom: -0.45rem;
+  left: 0;
+  height: 1px;
+  content: "";
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 250ms ease;
+}
+
+.nav-link:hover::after,
+.nav-link:focus-visible::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+.photo-motion {
+  transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1), filter 500ms ease;
+}
+
+.group:hover .photo-motion {
+  transform: scale(1.035);
+  filter: saturate(1.06);
+}
+
+.lift-card {
+  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 300ms ease, background-color 300ms ease;
+}
+
+.lift-card:hover {
+  transform: translateY(-5px);
+}
+
+.stagger > * {
+  animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.stagger > *:nth-child(2) { animation-delay: 80ms; }
+.stagger > *:nth-child(3) { animation-delay: 160ms; }
+.stagger > *:nth-child(4) { animation-delay: 240ms; }
+.stagger > *:nth-child(5) { animation-delay: 320ms; }
+.stagger > *:nth-child(6) { animation-delay: 400ms; }
+
+details summary {
+  transition: color 200ms ease, padding-left 200ms ease;
+}
+
+details:hover summary,
+details[open] summary {
+  color: #5c1c1d;
+  padding-left: 0.35rem;
+}
+
+details[open] p {
+  animation: fade-up 300ms ease-out both;
+}
+
+/* 무한 롤링 로고 벨트 (isanghan.co.kr의 simplyscroll 패턴을 순수 CSS로 재구현)
+   콘텐츠를 2벌 이어붙인 트랙을 -50%까지 이동시켜 끊김 없이 순환한다. */
+.marquee {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  gap: 1rem;
+  animation: marquee-left 38s linear infinite;
+}
+
+.marquee-track.reverse {
+  animation-name: marquee-right;
+}
+
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes marquee-left {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes marquee-right {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
+}
+
+/* 접근성: 모션 최소화 사용자 배려 */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+
+  .photo-motion,
+  .lift-card,
+  .btn {
+    transition: none !important;
+  }
+}

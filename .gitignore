@@ -1,0 +1,36 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# env
+.env
+.env*.local
+
+# local reservation fallback store (개발용 임시 저장)
+/data/reservations.json
+
+# vercel
+.vercel
+
+# 내부 자료 (대외비 브리핑북/교육자료 — 공개 저장소에 절대 포함 금지)
+/.claude/docs/
+
+# 가격 배너가 박힌 원본 이미지 백업 (공개 배포 금지, 로컬 참고용)
+/.image-originals/
