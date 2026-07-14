@@ -40,6 +40,19 @@ export default function FloatingCTA() {
             <span className="text-[11px] font-semibold">카카오톡</span>
           </a>
           <a
+            href={site.instagramUrl}
+            target="_blank"
+            rel="noopener"
+            className="flex flex-col items-center gap-1 px-4 py-3.5 text-white transition-all duration-200 hover:scale-105 hover:bg-white/10"
+          >
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="18" height="18" rx="5" />
+              <circle cx="12" cy="12" r="4" />
+              <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+            </svg>
+            <span className="text-[11px] font-semibold">인스타</span>
+          </a>
+          <a
             href="#reserve"
             className="flex flex-col items-center gap-1 px-4 py-3.5 text-white transition-all duration-200 hover:scale-105 hover:bg-white/10"
           >

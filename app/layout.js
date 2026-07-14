@@ -1,5 +1,6 @@
 import localFont from "next/font/local";
 import { Nanum_Pen_Script } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { site } from "@/lib/site";
 
@@ -58,7 +59,15 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="ko" className={`${pretendard.variable} ${nanumPenScript.variable}`}>
-      <body className="font-sans">{children}</body>
+      <body className="font-sans">
+        {children}
+        {/* 우측 하단 챗봇 위젯 (kittychat) */}
+        <Script
+          src="https://www.kittychat.ai/chatbot/chatbot.js"
+          strategy="afterInteractive"
+          chatbotId="qYADyQ=="
+        />
+      </body>
     </html>
   );
 }
