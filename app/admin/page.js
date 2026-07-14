@@ -26,14 +26,13 @@ export default function AdminPage() {
 
   const downloadCsv = () => {
     if (!rows?.length) return;
-    const header = ["접수일시", "이름", "연락처", "희망방문일", "방문시간", "상태"];
+    const header = ["접수일시", "이름", "연락처", "희망방문일", "상태"];
     const lines = rows.map((r) =>
       [
         new Date(r.created_at).toLocaleString("ko-KR"),
         r.name,
         r.phone,
         r.visit_date,
-        r.visit_time,
         r.status,
       ]
         .map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`)
@@ -86,7 +85,6 @@ export default function AdminPage() {
                     <th className="px-4 py-3 font-semibold">이름</th>
                     <th className="px-4 py-3 font-semibold">연락처</th>
                     <th className="px-4 py-3 font-semibold">희망방문일</th>
-                    <th className="px-4 py-3 font-semibold">시간</th>
                     <th className="px-4 py-3 font-semibold">상태</th>
                   </tr>
                 </thead>
@@ -99,7 +97,6 @@ export default function AdminPage() {
                       <td className="px-4 py-3 font-medium text-ink">{r.name}</td>
                       <td className="whitespace-nowrap px-4 py-3 text-ink/80">{r.phone}</td>
                       <td className="whitespace-nowrap px-4 py-3 text-ink/80">{r.visit_date}</td>
-                      <td className="whitespace-nowrap px-4 py-3 text-ink/70">{r.visit_time}</td>
                       <td className="px-4 py-3">
                         <span className="rounded-full bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand">
                           {r.status}
@@ -109,7 +106,7 @@ export default function AdminPage() {
                   ))}
                   {rows.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="px-4 py-10 text-center text-ink/50">
+                      <td colSpan={5} className="px-4 py-10 text-center text-ink/50">
                         접수된 예약이 없습니다.
                       </td>
                     </tr>

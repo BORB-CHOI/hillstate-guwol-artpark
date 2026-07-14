@@ -56,11 +56,8 @@ export default function Footer() {
           </p>
         </div>
 
-        <div className="mt-5 flex flex-col gap-3 border-t border-white/10 pt-5 text-xs text-white/40 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-5 border-t border-white/10 pt-5 text-xs text-white/40">
           <p>© {new Date().getFullYear()} 힐스테이트 구월아트파크 방문예약.</p>
-          <a href="/lookup" className="font-medium text-white/60 hover:text-white/90">
-            예약 내역 조회 →
-          </a>
         </div>
         </Reveal>
       </div>
