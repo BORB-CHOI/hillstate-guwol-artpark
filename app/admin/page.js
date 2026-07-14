@@ -83,6 +83,23 @@ export default function AdminPage() {
     }
   };
 
+  const testNotify = async () => {
+    setError("");
+    try {
+      const res = await fetch(`/api/telegram/test?token=${encodeURIComponent(token)}`);
+      const data = await res.json();
+      if (data.ok) {
+        window.alert("전송 성공: 텔레그램을 확인하세요.");
+      } else {
+        window.alert(
+          `전송 실패\n\n설정: ${JSON.stringify(data.env)}\n오류: ${data.error || data.message}`
+        );
+      }
+    } catch (err) {
+      window.alert(`요청 실패: ${err.message}`);
+    }
+  };
+
   // 검색(이름·연락처) + 구분 필터를 함께 적용한 목록
   const filtered = useMemo(() => {
     if (!rows) return [];
@@ -142,6 +159,13 @@ export default function AdminPage() {
             <>
               <button type="button" onClick={downloadCsv} className="btn-call !py-2.5">
                 CSV 다운로드
+              </button>
+              <button
+                type="button"
+                onClick={testNotify}
+                className="rounded-xl border border-black/15 px-4 py-2.5 text-sm font-semibold text-ink/70 hover:border-brand hover:text-brand"
+              >
+                알림 테스트
               </button>
               <button
                 type="button"
