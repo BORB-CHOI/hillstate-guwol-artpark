@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createReservation, listReservations } from "@/lib/db";
+import { createReservation, listReservations, deleteReservation } from "@/lib/db";
 import { notifyNewReservation } from "@/lib/kakao";
 
 export const dynamic = "force-dynamic";
@@ -74,5 +74,27 @@ export async function GET(req) {
   } catch (e) {
     console.error("[reservations:GET]", e.message);
     return NextResponse.json({ message: "조회 중 오류가 발생했습니다." }, { status: 500 });
+  }
+}
+
+// 예약 1건 삭제 (관리자용 — 토큰 필요)
+export async function DELETE(req) {
+  const token = req.headers.get("x-admin-token") || new URL(req.url).searchParams.get("token");
+  if (!process.env.ADMIN_TOKEN || token !== process.env.ADMIN_TOKEN) {
+    return NextResponse.json({ message: "권한이 없습니다." }, { status: 401 });
+  }
+  const id = new URL(req.url).searchParams.get("id");
+  if (!id) {
+    return NextResponse.json({ message: "id가 필요합니다." }, { status: 400 });
+  }
+  try {
+    const removed = await deleteReservation(id);
+    if (!removed) {
+      return NextResponse.json({ message: "해당 기록을 찾을 수 없습니다." }, { status: 404 });
+    }
+    return NextResponse.json({ ok: true, removed });
+  } catch (e) {
+    console.error("[reservations:DELETE]", e.message);
+    return NextResponse.json({ message: "삭제 중 오류가 발생했습니다." }, { status: 500 });
   }
 }

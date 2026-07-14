@@ -1,6 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+
+// 관리자 토큰을 짧게 유지하기 위한 세션 저장 키(브라우저 탭 닫으면 사라짐).
+const TOKEN_KEY = "admin_token";
 
 // source 문자열을 두 종류로 분류한다.
 // 관심고객 등록(빠른상담) → "관심등록", 그 외(홍보관 방문예약폼 등) → "방문예약"
@@ -20,19 +23,80 @@ export default function AdminPage() {
   const [query, setQuery] = useState("");
   const [kind, setKind] = useState("all");
 
-  const load = async (e) => {
+  const load = async (e, tokenArg) => {
     e?.preventDefault();
+    const t = tokenArg ?? token;
+    if (!t) return;
     setError("");
     setState("loading");
     try {
-      const res = await fetch(`/api/reservations?token=${encodeURIComponent(token)}`);
+      const res = await fetch(`/api/reservations?token=${encodeURIComponent(t)}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "조회 실패");
       setRows(data.reservations);
       setState("done");
+      // 조회 성공한 토큰만 세션에 저장 (새로고침 시 자동 로그인)
+      try {
+        sessionStorage.setItem(TOKEN_KEY, t);
+      } catch {}
     } catch (err) {
       setError(err.message);
       setState("error");
+    }
+  };
+
+  // 새로고침 시 세션에 저장된 토큰으로 자동 조회
+  useEffect(() => {
+    let saved = "";
+    try {
+      saved = sessionStorage.getItem(TOKEN_KEY) || "";
+    } catch {}
+    if (saved) {
+      setToken(saved);
+      load(null, saved);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const logout = () => {
+    try {
+      sessionStorage.removeItem(TOKEN_KEY);
+    } catch {}
+    setToken("");
+    setRows(null);
+    setState("idle");
+    setError("");
+  };
+
+  const remove = async (row) => {
+    if (!window.confirm(`${row.name} (${row.phone}) 기록을 삭제할까요?`)) return;
+    try {
+      const res = await fetch(
+        `/api/reservations?token=${encodeURIComponent(token)}&id=${encodeURIComponent(row.id)}`,
+        { method: "DELETE" }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "삭제 실패");
+      setRows((prev) => prev.filter((r) => r.id !== row.id));
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const testKakao = async () => {
+    setError("");
+    try {
+      const res = await fetch(`/api/kakao/test?token=${encodeURIComponent(token)}`);
+      const data = await res.json();
+      if (data.ok) {
+        window.alert("전송 성공: 카카오 '나와의 채팅'을 확인하세요.");
+      } else {
+        window.alert(
+          `전송 실패\n\n설정: ${JSON.stringify(data.env)}\n오류: ${data.error || data.message}`
+        );
+      }
+    } catch (err) {
+      window.alert(`요청 실패: ${err.message}`);
     }
   };
 
@@ -91,10 +155,26 @@ export default function AdminPage() {
           <button type="submit" className="btn-cta !py-2.5" disabled={state === "loading"}>
             {state === "loading" ? "불러오는 중..." : "불러오기"}
           </button>
-          {rows?.length ? (
-            <button type="button" onClick={downloadCsv} className="btn-call !py-2.5">
-              CSV 다운로드
-            </button>
+          {rows ? (
+            <>
+              <button type="button" onClick={downloadCsv} className="btn-call !py-2.5">
+                CSV 다운로드
+              </button>
+              <button
+                type="button"
+                onClick={testKakao}
+                className="rounded-xl border border-black/15 px-4 py-2.5 text-sm font-semibold text-ink/70 hover:border-brand hover:text-brand"
+              >
+                카톡 알림 테스트
+              </button>
+              <button
+                type="button"
+                onClick={logout}
+                className="rounded-xl px-4 py-2.5 text-sm font-semibold text-ink/45 hover:text-cta"
+              >
+                로그아웃
+              </button>
+            </>
           ) : null}
         </form>
 
@@ -149,6 +229,7 @@ export default function AdminPage() {
                     <th className="px-4 py-3 font-semibold">희망방문일시</th>
                     <th className="px-4 py-3 font-semibold">유입경로</th>
                     <th className="px-4 py-3 font-semibold">상태</th>
+                    <th className="px-4 py-3 font-semibold">관리</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-black/5">
@@ -183,12 +264,21 @@ export default function AdminPage() {
                             {r.status}
                           </span>
                         </td>
+                        <td className="whitespace-nowrap px-4 py-3">
+                          <button
+                            type="button"
+                            onClick={() => remove(r)}
+                            className="rounded-lg border border-cta/30 px-2.5 py-1 text-xs font-semibold text-cta hover:bg-cta hover:text-white"
+                          >
+                            삭제
+                          </button>
+                        </td>
                       </tr>
                     );
                   })}
                   {filtered.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="px-4 py-10 text-center text-ink/50">
+                      <td colSpan={8} className="px-4 py-10 text-center text-ink/50">
                         {rows.length === 0 ? "접수된 예약이 없습니다." : "검색 결과가 없습니다."}
                       </td>
                     </tr>
