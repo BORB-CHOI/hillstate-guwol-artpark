@@ -83,23 +83,6 @@ export default function AdminPage() {
     }
   };
 
-  const testKakao = async () => {
-    setError("");
-    try {
-      const res = await fetch(`/api/kakao/test?token=${encodeURIComponent(token)}`);
-      const data = await res.json();
-      if (data.ok) {
-        window.alert("전송 성공: 카카오 '나와의 채팅'을 확인하세요.");
-      } else {
-        window.alert(
-          `전송 실패\n\n설정: ${JSON.stringify(data.env)}\n오류: ${data.error || data.message}`
-        );
-      }
-    } catch (err) {
-      window.alert(`요청 실패: ${err.message}`);
-    }
-  };
-
   // 검색(이름·연락처) + 구분 필터를 함께 적용한 목록
   const filtered = useMemo(() => {
     if (!rows) return [];
@@ -142,7 +125,7 @@ export default function AdminPage() {
   return (
     <main className="min-h-screen bg-ivory py-10">
       <div className="container-content">
-        <h1 className="text-2xl font-extrabold text-brand">방문예약 관리자</h1>
+        <h1 className="text-2xl font-extrabold text-brand">문의 관리자</h1>
 
         <form onSubmit={load} className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center">
           <input
@@ -159,13 +142,6 @@ export default function AdminPage() {
             <>
               <button type="button" onClick={downloadCsv} className="btn-call !py-2.5">
                 CSV 다운로드
-              </button>
-              <button
-                type="button"
-                onClick={testKakao}
-                className="rounded-xl border border-black/15 px-4 py-2.5 text-sm font-semibold text-ink/70 hover:border-brand hover:text-brand"
-              >
-                카톡 알림 테스트
               </button>
               <button
                 type="button"

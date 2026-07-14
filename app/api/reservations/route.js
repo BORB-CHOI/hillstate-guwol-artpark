@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createReservation, listReservations, deleteReservation } from "@/lib/db";
-import { notifyNewReservation } from "@/lib/kakao";
+import { notifyNewReservation } from "@/lib/notify";
 
 export const dynamic = "force-dynamic";
 
