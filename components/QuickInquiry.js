@@ -8,8 +8,22 @@ import { useState } from "react";
 import { CheckIcon } from "./Icons";
 import Reveal from "./Reveal";
 
+const todayStr = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+
+const trackingParams = () => {
+  const params = new URLSearchParams(window.location.search);
+  return Object.fromEntries(
+    ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"]
+      .map((key) => [key, params.get(key) || ""])
+      .filter(([, value]) => value)
+  );
+};
+
 export default function QuickInquiry() {
-  const [form, setForm] = useState({ name: "", phone: "", agree: false, company: "" });
+  const [form, setForm] = useState({ name: "", phone: "", date: "", time: "", agree: false, company: "" });
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
 
@@ -25,6 +39,8 @@ export default function QuickInquiry() {
     setError("");
     if (!form.name.trim()) return setError("이름을 입력해 주세요.");
     if (!validPhone(form.phone)) return setError("휴대폰 번호를 정확히 입력해 주세요.");
+    if (!form.date) return setError("희망 방문일을 선택해 주세요.");
+    if (!form.time) return setError("희망 방문 시간을 선택해 주세요.");
     if (!form.agree) return setError("개인정보 수집, 이용에 동의해 주세요.");
 
     setStatus("loading");
@@ -34,9 +50,8 @@ export default function QuickInquiry() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
-          date: "협의 필요",
-          time: "빠른상담 신청",
           source: "관심고객 등록(빠른상담)",
+          tracking: trackingParams(),
         }),
       });
       const data = await res.json();
@@ -63,18 +78,18 @@ export default function QuickInquiry() {
               </p>
             </div>
           ) : (
-            <form onSubmit={onSubmit} className="flex flex-col gap-3 sm:flex-row sm:items-start">
-              <div className="shrink-0 sm:pr-4 sm:pt-2">
+            <form onSubmit={onSubmit} className="flex flex-col gap-3">
+              <div>
                 <p className="text-sm font-bold text-ink">관심고객 등록</p>
                 <p className="mt-0.5 text-xs text-ink/55">성함과 연락처만 남겨주시면 담당자가 순차 연락드립니다</p>
               </div>
-              <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:flex-wrap lg:flex-nowrap">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 <input
                   type="text"
                   value={form.name}
                   onChange={update("name")}
                   placeholder="성함"
-                  className="quick-input sm:w-28"
+                  className="quick-input"
                   autoComplete="name"
                 />
                 <input
@@ -82,14 +97,30 @@ export default function QuickInquiry() {
                   value={form.phone}
                   onChange={update("phone")}
                   placeholder="010-0000-0000"
-                  className="quick-input sm:min-w-[160px] sm:flex-1"
+                  className="quick-input"
                   autoComplete="tel"
                   inputMode="numeric"
+                />
+                <input
+                  type="date"
+                  value={form.date}
+                  min={todayStr()}
+                  onChange={update("date")}
+                  aria-label="희망 방문일"
+                  className="quick-input"
+                />
+                <input
+                  type="time"
+                  value={form.time}
+                  step="60"
+                  onChange={update("time")}
+                  aria-label="희망 방문시간"
+                  className="quick-input"
                 />
                 <button
                   type="submit"
                   disabled={status === "loading"}
-                  className="btn-cta w-full shrink-0 !px-5 !py-2.5 text-sm disabled:opacity-60 sm:w-auto"
+                  className="btn-cta w-full !px-5 !py-2.5 text-sm disabled:opacity-60 sm:col-span-2"
                 >
                   {status === "loading" ? "접수 중..." : "관심고객 등록하기"}
                 </button>

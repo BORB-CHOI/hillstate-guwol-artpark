@@ -4,6 +4,8 @@ import Script from "next/script";
 import "./globals.css";
 import { site } from "@/lib/site";
 
+const naverSiteVerification = process.env.NAVER_SITE_VERIFICATION;
+
 // 본문/헤드라인: Pretendard 하나로 통일 — 국내 대다수 브랜드·분양 사이트가 쓰는
 // 표준 한글 웹폰트. 굵기 대비만으로 위계를 만든다 (세리프 혼용 금지).
 const pretendard = localFont({
@@ -45,7 +47,28 @@ export const metadata = {
     title: `${site.name} 홍보관 방문예약`,
     description:
       "구월동 중심 브랜드 신축 주거공간. 궁금한 정보를 확인하고 홍보관 방문을 예약하세요.",
+    images: [
+      {
+        url: "/images/og-hillstate-guwol-artpark.png",
+        width: 1792,
+        height: 928,
+        alt: "힐스테이트 구월아트파크 야경",
+      },
+    ],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "힐스테이트 구월아트파크 홍보관 방문예약",
+    description: "구월동 중심 브랜드 신축 주거공간. 홍보관 방문을 예약하세요.",
+    images: ["/images/og-hillstate-guwol-artpark.png"],
+  },
+  icons: {
+    icon: [{ url: "/icon.png", type: "image/png", sizes: "512x512" }],
+    apple: "/apple-icon.png",
+  },
+  verification: naverSiteVerification
+    ? { other: { "naver-site-verification": naverSiteVerification } }
+    : undefined,
   robots: { index: true, follow: true },
   alternates: { canonical: site.url },
 };
@@ -61,7 +84,6 @@ export default function RootLayout({ children }) {
     <html lang="ko" className={`${pretendard.variable} ${nanumPenScript.variable}`}>
       <body className="font-sans">
         {children}
-        {/* 우측 하단 챗봇 위젯 (kittychat) */}
         <Script
           src="https://www.kittychat.ai/chatbot/chatbot.js"
           strategy="afterInteractive"

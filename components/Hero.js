@@ -13,7 +13,7 @@ export default function Hero() {
       {hasHeroImage ? (
         <>
           <div
-            className="animate-hero-zoom absolute inset-0 bg-cover bg-center"
+            className="animate-hero-zoom absolute inset-0 origin-top bg-cover bg-top"
             style={{ backgroundImage: "url(/images/hero.jpg)" }}
             aria-hidden="true"
           />

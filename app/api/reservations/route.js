@@ -5,6 +5,7 @@ import { notifyNewReservation } from "@/lib/kakao";
 export const dynamic = "force-dynamic";
 
 const validPhone = (p) => /^01[016789][0-9]{7,8}$/.test((p || "").replace(/[^0-9]/g, ""));
+const validTime = (t) => /^([01][0-9]|2[0-3]):[0-5][0-9]$/.test(t || "");
 
 // 방문예약 접수
 export async function POST(req) {
@@ -15,7 +16,7 @@ export async function POST(req) {
     return NextResponse.json({ message: "잘못된 요청입니다." }, { status: 400 });
   }
 
-  const { name, phone, date, time, agree, company, source } = body || {};
+  const { name, phone, date, time, agree, company, source, tracking } = body || {};
 
   // 허니팟: 봇이 채우는 숨김 필드에 값이 있으면 스팸으로 간주 (조용히 성공 응답)
   if (company) {
@@ -31,6 +32,9 @@ export async function POST(req) {
   if (!date) {
     return NextResponse.json({ message: "희망 방문일을 선택해 주세요." }, { status: 400 });
   }
+  if (!validTime(time)) {
+    return NextResponse.json({ message: "희망 방문 시간을 분 단위로 선택해 주세요." }, { status: 400 });
+  }
   if (!agree) {
     return NextResponse.json({ message: "개인정보 수집, 이용에 동의해 주세요." }, { status: 400 });
   }
@@ -42,6 +46,7 @@ export async function POST(req) {
       date,
       time: time || "",
       source: source || "홍보관 방문예약폼",
+      tracking: tracking || {},
     });
 
     // 카카오/문자 알림은 접수 성공을 막지 않도록 실패해도 무시

@@ -21,7 +21,7 @@ yarn-error.log*
 
 # env
 .env
-.env*.local
+.env.local
 
 # local reservation fallback store (개발용 임시 저장)
 /data/reservations.json

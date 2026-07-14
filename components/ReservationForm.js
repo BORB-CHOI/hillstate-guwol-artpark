@@ -11,11 +11,21 @@ const todayStr = () => {
   ).padStart(2, "0")}`;
 };
 
+const trackingParams = () => {
+  const params = new URLSearchParams(window.location.search);
+  return Object.fromEntries(
+    ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"]
+      .map((key) => [key, params.get(key) || ""])
+      .filter(([, value]) => value)
+  );
+};
+
 export default function ReservationForm() {
   const [form, setForm] = useState({
     name: "",
     phone: "",
     date: "",
+    time: "",
     agree: false,
     company: "", // 허니팟 (스팸 봇 차단용, 사용자에겐 숨김)
   });
@@ -35,6 +45,7 @@ export default function ReservationForm() {
     if (!form.name.trim()) return setError("이름을 입력해 주세요.");
     if (!validPhone(form.phone)) return setError("휴대폰 번호를 정확히 입력해 주세요.");
     if (!form.date) return setError("희망 방문일을 선택해 주세요.");
+    if (!form.time) return setError("희망 방문 시간을 선택해 주세요.");
     if (!form.agree) return setError("개인정보 수집, 이용에 동의해 주세요.");
 
     setStatus("loading");
@@ -42,7 +53,7 @@ export default function ReservationForm() {
       const res = await fetch("/api/reservations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, source: "홍보관 방문예약폼" }),
+        body: JSON.stringify({ ...form, source: "홍보관 방문예약폼", tracking: trackingParams() }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "예약 접수에 실패했습니다.");
@@ -70,6 +81,8 @@ export default function ReservationForm() {
             </p>
             <p className="mt-6 rounded-xl bg-ivory px-4 py-3 text-sm text-ink/60">
               희망 방문일 <b>{form.date}</b>
+              <br />
+              희망 방문시간 <b>{form.time}</b>
             </p>
           </div>
         </div>
@@ -128,6 +141,16 @@ export default function ReservationForm() {
                   value={form.date}
                   min={todayStr()}
                   onChange={update("date")}
+                  className="input"
+                />
+              </Field>
+
+              <Field label="희망 방문시간" required>
+                <input
+                  type="time"
+                  value={form.time}
+                  step="60"
+                  onChange={update("time")}
                   className="input"
                 />
               </Field>
