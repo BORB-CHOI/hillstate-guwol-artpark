@@ -50,8 +50,8 @@ export const metadata = {
     images: [
       {
         url: "/images/og-hillstate-guwol-artpark.png",
-        width: 1792,
-        height: 928,
+        width: 1731,
+        height: 909,
         alt: "힐스테이트 구월아트파크 야경",
       },
     ],

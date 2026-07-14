@@ -7,6 +7,7 @@
 import { useState } from "react";
 import { CheckIcon } from "./Icons";
 import Reveal from "./Reveal";
+import { formatPhone, isValidMobile } from "@/lib/phone";
 
 const todayStr = () => {
   const d = new Date();
@@ -28,11 +29,12 @@ export default function QuickInquiry() {
   const [error, setError] = useState("");
 
   const update = (k) => (e) => {
-    const v = e.target.type === "checkbox" ? e.target.checked : e.target.value;
+    const raw = e.target.type === "checkbox" ? e.target.checked : e.target.value;
+    const v = k === "phone" ? formatPhone(raw) : raw;
     setForm((f) => ({ ...f, [k]: v }));
   };
 
-  const validPhone = (p) => /^01[016789][0-9]{7,8}$/.test(p.replace(/[^0-9]/g, ""));
+  const validPhone = isValidMobile;
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -100,6 +102,7 @@ export default function QuickInquiry() {
                   className="quick-input"
                   autoComplete="tel"
                   inputMode="numeric"
+                  maxLength={13}
                 />
                 <input
                   type="date"
