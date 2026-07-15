@@ -49,8 +49,25 @@ export async function POST(req) {
       tracking: tracking || {},
     });
 
-    // 카카오/문자 알림은 접수 성공을 막지 않도록 실패해도 무시
-    notifyNewReservation(saved).catch((e) => console.error("[notify]", e.message));
+    // 서버리스 환경에서는 응답을 먼저 끝내면 뒤의 알림 작업이 중단될 수 있다.
+    // 발송 결과를 기다리되, 알림 실패 자체는 고객의 접수를 실패시키지 않는다.
+    try {
+      const notification = await notifyNewReservation(saved);
+      console.log("[notify] reservation notification completed", {
+        reservationId: saved.id,
+        telegram: notification.telegram ? "sent" : "not_sent",
+        telegramError: notification.telegramError || undefined,
+        sms: notification.sms ? "sent" : "not_sent",
+        smsError: notification.smsError || undefined,
+        skipped: notification.skipped || undefined,
+      });
+    } catch (e) {
+      // 예상 밖의 알림 코드 오류도 예약 접수 성공에는 영향을 주지 않게 한다.
+      console.error("[notify] reservation notification crashed", {
+        reservationId: saved.id,
+        message: e.message,
+      });
+    }
 
     return NextResponse.json({ ok: true, id: saved.id });
   } catch (e) {
