@@ -91,14 +91,13 @@ export default function SelfCheckResult({
             </p>
             <p className="mt-1.5 text-sm text-ink/55">먼저 연락하고 싶으시면 아래를 눌러주세요.</p>
           </div>
+          {/* 방문예약은 이미 이 폼으로 접수됐다. 여기서 다시 예약 폼으로
+              보내면 같은 신청을 두 번 하게 되므로 넣지 않는다.
+              남기는 것은 "기다리지 않고 먼저 연락하는" 수단뿐이다. */}
           <div className="mt-5 flex flex-col gap-3">
             <a href={`tel:${site.phoneRaw}`} className="btn-cta w-full py-4 text-lg">
               <PhoneIcon className="h-5 w-5" />
               지금 전화로 상담받기
-            </a>
-            <a href="#reserve" className="btn-call w-full py-4 text-lg">
-              <CalendarIcon className="h-5 w-5" />
-              홍보관 방문예약
             </a>
             <a
               href={site.kakaoUrl}
@@ -181,12 +180,15 @@ export default function SelfCheckResult({
               aria-hidden="true"
             />
 
+            {/* 받는 항목이 홍보관 방문예약과 같으므로 라벨도 그렇게 쓴다.
+                "상담 신청"이라고만 하면 전화 상담으로 읽힌다. */}
             <button
               type="submit"
               disabled={status === "loading"}
               className="btn-cta w-full py-4 text-lg disabled:opacity-60"
             >
-              {status === "loading" ? "접수 중..." : "상담 신청하기"}
+              <CalendarIcon className="h-5 w-5" />
+              {status === "loading" ? "접수 중..." : "방문 상담 예약하기"}
             </button>
           </div>
 

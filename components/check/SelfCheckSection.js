@@ -86,6 +86,17 @@ export default function SelfCheckSection() {
     };
   }, []);
 
+  // 결과 단계에서는 기준 높이를 다시 잡는다.
+  //
+  // "줄어들지 않기"는 도입부에서 문항으로 넘어갈 때 아래 콘텐츠가 딸려
+  // 올라오는 것을 막으려는 장치다. 결과가 뜨거나 접수가 끝나 폼이 사라질
+  // 때까지 그 높이를 붙들고 있으면 카드 아래에 빈 공간만 남는다.
+  useLayoutEffect(() => {
+    if (phase !== "result") return;
+    const el = contentRef.current;
+    if (el) setMinHeight(el.offsetHeight);
+  }, [phase, submitted]);
+
   // 결과는 문항보다 훨씬 길어서 섹션 머리를 다시 맞춰줘야 첫 줄부터 읽힌다.
   // 도입부에서 문항으로 넘어갈 때는 높이 전환만으로 충분해서 스크롤하지 않는다.
   const keepInView = () => {
