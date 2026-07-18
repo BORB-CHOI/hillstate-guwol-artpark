@@ -34,3 +34,8 @@ yarn-error.log*
 
 # 가격 배너가 박힌 원본 이미지 백업 (공개 배포 금지, 로컬 참고용)
 /.image-originals/
+
+# 로컬 폴백 저장소 (Upstash Redis 미설정 시 lib/db.js가 여기에 쓴다)
+# 고객 이름·연락처가 그대로 담기므로 절대 커밋하지 않는다.
+/data/
+.gstack/

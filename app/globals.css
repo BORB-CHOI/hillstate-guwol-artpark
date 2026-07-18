@@ -17,12 +17,8 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* 모바일 하단 고정 CTA 높이만큼 본문 여백 확보 */
-@media (max-width: 767px) {
-  body {
-    padding-bottom: 64px;
-  }
-}
+/* 모바일 하단 고정 CTA 높이만큼의 여백은 FloatingCTA가 스페이서로 직접 확보한다.
+   body에 걸어두면 고정 바를 쓰지 않는 화면에도 빈 띠가 남는다. */
 
 @layer components {
   .container-content {
@@ -163,6 +159,156 @@ details[open] p {
   to { transform: translateX(0); }
 }
 
+/* =========================================================
+   준비도 체크 (self-check)
+   모션은 네 개로 제한한다. 티저 3단계 점등, 진행 라인, 보기 선택 반응,
+   결과 인장 3연속. 그 이상은 넣지 않는다.
+   ========================================================= */
+
+/* 보기 버튼 — 정보 카드(.lift-card)와 달리 '눌리는' 반응을 준다. */
+.choice {
+  position: relative;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 60px;
+  padding: 1rem 1.25rem;
+  border-radius: 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: left;
+  transition: background-color 200ms ease, border-color 200ms ease, transform 120ms ease;
+}
+
+.choice:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(216, 195, 154, 0.45);
+}
+
+.choice:focus-visible {
+  outline: 2px solid #d8c39a;
+  outline-offset: 3px;
+}
+
+.choice:active {
+  transform: scale(0.985);
+}
+
+.choice-arrow {
+  flex-shrink: 0;
+  color: rgba(216, 195, 154, 0.55);
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), color 200ms ease;
+}
+
+.choice:hover .choice-arrow {
+  transform: translateX(4px);
+  color: #d8c39a;
+}
+
+/* 선택 확정 순간의 마이크로 리워드 — 골드로 한 번 번쩍이고 다음 문항으로 넘어간다 */
+.choice.is-picked {
+  background: rgba(184, 150, 90, 0.28);
+  border-color: #d8c39a;
+}
+
+/* 도입 → 문항 → 결과로 넘어갈 때 섹션 높이가 줄지 않게 잡아둔다.
+   min-height 값은 JS가 실측해서 넣는다(줄어들 때 버티고, 늘어날 땐 따라간다). */
+.check-morph {
+  transition: min-height 450ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 문항 진행 표시 — 문항 수만큼의 짧은 눈금.
+   섹션을 가로지르는 얇은 선은 구분선처럼 보여서 눈금으로 바꿨다. */
+.tick {
+  height: 3px;
+  flex: 1 1 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  transition: background-color 350ms ease;
+}
+
+.tick.is-done {
+  background: #b8965a;
+}
+
+.tick.is-current {
+  background: #d8c39a;
+}
+
+/* 문항 전환 — 진행 방향과 슬라이드 방향을 일치시킨다 */
+@keyframes step-in-next {
+  from { opacity: 0; transform: translateX(28px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes step-in-prev {
+  from { opacity: 0; transform: translateX(-28px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.step-next { animation: step-in-next 380ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.step-prev { animation: step-in-prev 380ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* 시그니처: 결과 화면 3단 관문 인장.
+   찍히듯 크게 들어와 제자리에 앉는다. 회전이나 튕김은 쓰지 않는다. */
+@keyframes seal-stamp {
+  0% { opacity: 0; transform: scale(1.25); }
+  60% { opacity: 1; }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes seal-row-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.seal-row { animation: seal-row-in 420ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+.seal-mark {
+  animation: seal-stamp 460ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* 종이에 인주가 스민 느낌 */
+  mix-blend-mode: multiply;
+}
+
+/* 티저 3단계 순차 점등 */
+.gate-step {
+  transition: border-color 400ms ease, background-color 400ms ease, color 400ms ease;
+}
+
+.gate-step.is-lit {
+  border-color: rgba(216, 195, 154, 0.5);
+  background: rgba(184, 150, 90, 0.12);
+}
+
+/* =========================================================
+   우측 하단 플로팅 스택 (kittychat 위젯 + 유튜브)
+   app/layout.js에서 불러오는 chatbot.js가 body 끝에 아래 두 요소를 심는다.
+     - iframe.ppc-widget       (인스타 아이콘, 높이 80px) 기본 bottom 20px
+     - div.ppc-widget-tooltip  ("Got a question?")       기본 bottom 100px
+   툴팁은 말풍선이 계속 떠 있어 콘텐츠를 가려서 감춘다. 인스타 아이콘은 남긴다.
+   (display: hidden 은 없는 값이라 먹지 않는다. none 이어야 한다)
+
+   아래에서 위로 쌓는 순서(components/FloatingYoutube.js와 함께 맞춘다):
+     데스크톱  인스타 20 → 유튜브 112
+     모바일    인스타 84 → 유튜브 176
+   모바일에서 인스타를 84px로 올리는 이유는 기본값 20px이 하단 고정 CTA
+   바(64px)와 겹쳐 예약 버튼을 가리기 때문이다.
+   ========================================================= */
+.ppc-widget-tooltip {
+  display: none !important;
+}
+
+@media (max-width: 767px) {
+  iframe.ppc-widget {
+    bottom: 84px !important;
+  }
+}
+
 /* 접근성: 모션 최소화 사용자 배려 */
 @media (prefers-reduced-motion: reduce) {
   * {
@@ -174,6 +320,15 @@ details[open] p {
   .photo-motion,
   .lift-card,
   .btn {
+    transition: none !important;
+  }
+
+  /* 높이 전환도 끄고 최종 높이로 바로 앉힌다 */
+  .check-morph {
+    transition: none !important;
+  }
+
+  .tick {
     transition: none !important;
   }
 }

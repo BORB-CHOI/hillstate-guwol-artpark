@@ -1,6 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import SelfCheckTable, { selfCheckCsv } from "@/components/admin/SelfCheckTable";
+
+// 상단 탭: 문의(예약·관심등록)와 준비도 체크는 성격이 달라 목록을 나눈다.
+const TABS = [
+  { key: "inquiry", label: "문의" },
+  { key: "check", label: "준비도 체크" },
+];
 
 // 관리자 토큰을 짧게 유지하기 위한 세션 저장 키(브라우저 탭 닫으면 사라짐).
 const TOKEN_KEY = "admin_token";
@@ -18,6 +25,8 @@ const KIND_FILTERS = [
 export default function AdminPage() {
   const [token, setToken] = useState("");
   const [rows, setRows] = useState(null);
+  const [checks, setChecks] = useState([]);
+  const [tab, setTab] = useState("inquiry");
   const [state, setState] = useState("idle");
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
@@ -30,10 +39,17 @@ export default function AdminPage() {
     setError("");
     setState("loading");
     try {
-      const res = await fetch(`/api/reservations?token=${encodeURIComponent(t)}`);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "조회 실패");
+      // 두 목록은 서로 독립이므로 병렬로 가져온다.
+      const [resRows, resChecks] = await Promise.all([
+        fetch(`/api/reservations?token=${encodeURIComponent(t)}`),
+        fetch(`/api/self-check?token=${encodeURIComponent(t)}`),
+      ]);
+      const data = await resRows.json();
+      if (!resRows.ok) throw new Error(data.message || "조회 실패");
+      const checkData = await resChecks.json().catch(() => ({}));
       setRows(data.reservations);
+      // 진단 목록 조회가 실패해도 문의 목록은 볼 수 있게 둔다.
+      setChecks(resChecks.ok ? checkData.selfChecks || [] : []);
       setState("done");
       // 조회 성공한 토큰만 세션에 저장 (새로고침 시 자동 로그인)
       try {
@@ -64,6 +80,7 @@ export default function AdminPage() {
     } catch {}
     setToken("");
     setRows(null);
+    setChecks([]);
     setState("idle");
     setError("");
   };
@@ -83,6 +100,21 @@ export default function AdminPage() {
     }
   };
 
+  const removeCheck = async (row) => {
+    if (!window.confirm(`${row.name} (${row.phone}) 진단 결과를 삭제할까요?`)) return;
+    try {
+      const res = await fetch(
+        `/api/self-check?token=${encodeURIComponent(token)}&id=${encodeURIComponent(row.id)}`,
+        { method: "DELETE" }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "삭제 실패");
+      setChecks((prev) => prev.filter((r) => r.id !== row.id));
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   // 검색(이름·연락처) + 구분 필터를 함께 적용한 목록
   const filtered = useMemo(() => {
     if (!rows) return [];
@@ -97,7 +129,33 @@ export default function AdminPage() {
     });
   }, [rows, query, kind]);
 
+  // 진단 목록은 구분 필터 없이 이름·연락처 검색만 적용한다.
+  const filteredChecks = useMemo(() => {
+    const q = query.trim().replace(/\s+/g, "");
+    const qDigits = q.replace(/\D/g, "");
+    if (!q) return checks;
+    return checks.filter((r) => {
+      const nameHit = String(r.name || "").replace(/\s+/g, "").includes(q);
+      const phoneHit = qDigits && String(r.phone || "").includes(qDigits);
+      return nameHit || phoneHit;
+    });
+  }, [checks, query]);
+
+  const saveCsv = (csv, name) => {
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${name}_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const downloadCsv = () => {
+    if (tab === "check") {
+      if (!filteredChecks.length) return;
+      saveCsv(selfCheckCsv(filteredChecks), "준비도체크");
+      return;
+    }
     if (!filtered.length) return;
     const header = ["접수일시", "구분", "이름", "연락처", "희망방문일시", "유입경로", "상태"];
     const lines = filtered.map((r) =>
@@ -113,13 +171,7 @@ export default function AdminPage() {
         .map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`)
         .join(",")
     );
-    const csv = "﻿" + [header.join(","), ...lines].join("\n");
-    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `예약목록_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    saveCsv("﻿" + [header.join(","), ...lines].join("\n"), "예약목록");
   };
 
   return (
@@ -158,6 +210,31 @@ export default function AdminPage() {
 
         {rows && (
           <div className="mt-6">
+            {/* 상단 탭 */}
+            <div className="mb-5 flex gap-6 border-b border-black/10">
+              {TABS.map((t) => {
+                const count = t.key === "check" ? checks.length : rows.length;
+                const active = tab === t.key;
+                return (
+                  <button
+                    key={t.key}
+                    type="button"
+                    onClick={() => setTab(t.key)}
+                    className={`-mb-px border-b-2 pb-3 text-base font-bold transition-colors ${
+                      active
+                        ? "border-brand text-brand"
+                        : "border-transparent text-ink/40 hover:text-ink/70"
+                    }`}
+                  >
+                    {t.label}
+                    <span className={`ml-2 text-sm ${active ? "text-gold" : "text-ink/30"}`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
             {/* 검색 + 구분 필터 */}
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <input
@@ -167,7 +244,7 @@ export default function AdminPage() {
                 placeholder="이름 또는 연락처 검색"
                 className="w-full max-w-xs rounded-xl border border-black/15 px-4 py-2.5 text-sm focus:border-brand focus:outline-none"
               />
-              <div className="flex shrink-0 rounded-xl border border-black/10 bg-white p-1">
+              <div className={`flex shrink-0 rounded-xl border border-black/10 bg-white p-1 ${tab === "check" ? "hidden" : ""}`}>
                 {KIND_FILTERS.map((f) => (
                   <button
                     key={f.key}
@@ -184,16 +261,29 @@ export default function AdminPage() {
             </div>
 
             <p className="mb-3 text-sm text-ink/60">
-              {kind === "all" && !query.trim() ? (
-                <>총 <b className="text-brand">{filtered.length}</b>건</>
-              ) : (
-                <>
-                  검색 결과 <b className="text-brand">{filtered.length}</b>건
-                  <span className="text-ink/40"> / 전체 {rows.length}건</span>
-                </>
-              )}
+              {(() => {
+                const shown = tab === "check" ? filteredChecks.length : filtered.length;
+                const total = tab === "check" ? checks.length : rows.length;
+                const plain = !query.trim() && (tab === "check" || kind === "all");
+                if (plain) {
+                  return (
+                    <>
+                      총 <b className="text-brand">{shown}</b>건
+                    </>
+                  );
+                }
+                return (
+                  <>
+                    검색 결과 <b className="text-brand">{shown}</b>건
+                    <span className="text-ink/40"> / 전체 {total}건</span>
+                  </>
+                );
+              })()}
             </p>
 
+            {tab === "check" ? (
+              <SelfCheckTable rows={filteredChecks} onDelete={removeCheck} />
+            ) : (
             <div className="overflow-x-auto rounded-2xl border border-black/5 bg-white shadow-card">
               <table className="w-full min-w-[820px] text-sm">
                 <thead className="bg-ivory text-left text-ink/60">
@@ -262,6 +352,7 @@ export default function AdminPage() {
                 </tbody>
               </table>
             </div>
+            )}
           </div>
         )}
       </div>

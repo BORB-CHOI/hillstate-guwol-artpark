@@ -16,6 +16,10 @@ export default function FloatingCTA() {
 
   return (
     <>
+      {/* 하단 고정 바가 본문 마지막 줄을 가리지 않도록 그만큼의 스페이서를 둔다.
+          고정 바를 쓰지 않는 화면에는 이 여백이 생기지 않는다. */}
+      <div className="h-16 md:hidden" aria-hidden="true" />
+
       {/* 데스크톱: 우측 고정 캡슐 (스크롤 시 등장) */}
       <div
         className={`fixed right-6 top-1/2 z-40 hidden -translate-y-1/2 items-start gap-3 transition-all duration-300 md:flex ${

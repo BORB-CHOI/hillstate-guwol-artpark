@@ -4,9 +4,11 @@ import QuickInquiry from "@/components/QuickInquiry";
 import LivingBenefits from "@/components/LivingBenefits";
 import PropertyDetails from "@/components/PropertyDetails";
 import WhyVisit from "@/components/WhyVisit";
+import SelfCheckSection from "@/components/check/SelfCheckSection";
 import InfoFAQ from "@/components/InfoFAQ";
 import ReservationForm from "@/components/ReservationForm";
 import FloatingCTA from "@/components/FloatingCTA";
+import FloatingYoutube from "@/components/FloatingYoutube";
 import Footer from "@/components/Footer";
 import { site, project } from "@/lib/site";
 
@@ -41,11 +43,13 @@ export default function Home() {
         <LivingBenefits />
         <PropertyDetails />
         <WhyVisit />
+        <SelfCheckSection />
         <InfoFAQ />
         <ReservationForm />
       </main>
       <Footer />
       <FloatingCTA />
+      <FloatingYoutube />
     </>
   );
 }

@@ -108,3 +108,17 @@ export function ArrowRightIcon({ className = "h-5 w-5" }) {
     </svg>
   );
 }
+
+export function YoutubeIcon({ className = "h-5 w-5" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M21.6 7.2a2.5 2.5 0 0 0-1.75-1.77C18.3 5 12 5 12 5s-6.3 0-7.85.43A2.5 2.5 0 0 0 2.4 7.2 26 26 0 0 0 2 12a26 26 0 0 0 .4 4.8 2.5 2.5 0 0 0 1.75 1.77C5.7 19 12 19 12 19s6.3 0 7.85-.43a2.5 2.5 0 0 0 1.75-1.77A26 26 0 0 0 22 12a26 26 0 0 0-.4-4.8Z"
+        fill="currentColor"
+      />
+      {/* 재생 삼각형은 버튼 배경색으로 뚫어야 로고 모양이 산다.
+          바깥 모양(currentColor)과 같은 흰색으로 칠하면 흰 덩어리가 된다. */}
+      <path d="M10.2 15.1V8.9l5.2 3.1-5.2 3.1Z" fill="#FF0000" />
+    </svg>
+  );
+}
