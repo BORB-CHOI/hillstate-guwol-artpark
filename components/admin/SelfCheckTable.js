@@ -3,7 +3,7 @@
 // 관리자 화면의 준비도 체크 목록.
 //
 // 열 순서는 담당자가 전화를 걸기 전에 확인하는 순서를 따른다.
-// 결과 → 무주택 → 신용 → 기존대출 → 가족구성 → 희망타입.
+// 결과 → 주택 보유 → 신용불량 이력 → 기존대출 → 가족구성 → 희망타입.
 // 결과 유형은 고객 화면에 코드로 노출하지 않지만, 담당자에게는 분류가
 // 필요하므로 여기서는 라벨로 보여준다.
 
@@ -29,8 +29,8 @@ export default function SelfCheckTable({ rows, onDelete }) {
             <th className="px-4 py-3 font-semibold">이름</th>
             <th className="px-4 py-3 font-semibold">연락처</th>
             <th className="px-4 py-3 font-semibold">희망방문일시</th>
-            <th className="px-4 py-3 font-semibold">무주택</th>
-            <th className="px-4 py-3 font-semibold">신용</th>
+            <th className="px-4 py-3 font-semibold">주택 보유</th>
+            <th className="px-4 py-3 font-semibold">신용불량 이력</th>
             <th className="px-4 py-3 font-semibold">기존대출</th>
             <th className="px-4 py-3 font-semibold">가족구성</th>
             <th className="px-4 py-3 font-semibold">희망타입</th>
