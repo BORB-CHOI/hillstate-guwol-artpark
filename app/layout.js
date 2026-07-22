@@ -5,6 +5,7 @@ import "./globals.css";
 import { site } from "@/lib/site";
 
 const naverSiteVerification = process.env.NAVER_SITE_VERIFICATION;
+const googleAnalyticsId = "G-CCB4RL6XCJ";
 
 // 본문/헤드라인: Pretendard 하나로 통일 — 국내 대다수 브랜드·분양 사이트가 쓰는
 // 표준 한글 웹폰트. 굵기 대비만으로 위계를 만든다 (세리프 혼용 금지).
@@ -84,6 +85,18 @@ export default function RootLayout({ children }) {
     <html lang="ko" className={`${pretendard.variable} ${nanumPenScript.variable}`}>
       <body className="font-sans">
         {children}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${googleAnalyticsId}');
+          `}
+        </Script>
         <Script
           src="https://www.kittychat.ai/chatbot/chatbot.js"
           strategy="afterInteractive"
